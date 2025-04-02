@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitMatrix Spatial Computing Demo</title>
+    <style>
+        body {
+            font-family: monospace;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #0066cc;
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        select, input, button {
+            padding: 5px;
+            margin-right: 10px;
+            font-family: monospace;
+        }
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0055aa;
+        }
+        .visualization {
+            white-space: pre;
+            padding: 15px;
+            background-color: #000;
+            color: #0f0;
+            border-radius: 5px;
+            overflow-x: auto;
+            min-height: 300px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .tab {
+            padding: 8px 15px;
+            background-color: #ddd;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #0066cc;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.8em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BitMatrix Spatial Computing Demo</h1>
+        <p>This interactive demo allows you to explore the capabilities of BitMatrix Spatial Computing through a simple web interface.</p>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="create">Create BitField</div>
+            <div class="tab" data-tab="transform">Transform</div>
+            <div class="tab" data-tab="pattern">Patterns</div>
+            <div class="tab" data-tab="animate">Animate</div>
+        </div>
+        
+        <div class="tab-content active" id="create-tab">
+            <div class="controls">
+                <h2>Create BitField</h2>
+                <div class="control-group">
+                    <label for="dimensions">Dimensions:</label>
+                    <select id="dimensions">
+                        <option value="3d">3D (x,y,z)</option>
+                        <option value="4d">4D (x,y,z,t)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="x-dim">X Dimension:</label>
+                    <input type="number" id="x-dim" min="1" max="16" value="8">
+                </div>
+                <div class="control-group">
+                    <label for="y-dim">Y Dimension:</label>
+                    <input type="number" id="y-dim" min="1" max="16" value="8">
+                </div>
+                <div class="control-group">
+                    <label for="z-dim">Z Dimension:</label>
+                    <input type="number" id="z-dim" min="1" max="8" value="4">
+                </div>
+                <div class="control-group" id="t-dim-group" style="display: none;">
+                    <label for="t-dim">T Dimension:</label>
+                    <input type="number" id="t-dim" min="1" max="4" value="2">
+                </div>
+                <div class="control-group">
+                    <label for="pattern">Initialize with:</label>
+                    <select id="pattern">
+                        <option value="empty">Empty</option>
+                        <option value="cube">Cube</option>
+                        <option value="sphere">Sphere</option>
+                        <option value="wave">Wave</option>
+                        <option value="random">Random</option>
+                    </select>
+                </div>
+                <button id="create-btn">Create BitField</button>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="transform-tab">
+            <div class="controls">
+                <h2>Transform BitField</h2>
+                <div class="control-group">
+                    <label for="transform-type">Transform Type:</label>
+                    <select id="transform-type">
+                        <option value="rotate">Rotate</option>
+                        <option value="translate">Translate</option>
+                        <option value="scale">Scale</option>
+                        <option value="mirror">Mirror</option>
+                        <option value="kta">KTA Transform</option>
+                    </select>
+                </div>
+                
+                <!-- Rotation controls -->
+                <div class="transform-params" id="rotate-params">
+                    <div class="control-group">
+                        <label for="rotation-axis">Axis:</label>
+                        <select id="rotation-axis">
+                            <option value="x">X</option>
+                            <option value="y">Y</option>
+                            <option value="z">Z</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="rotation-angle">Angle (degrees):</label>
+                        <input type="number" id="rotation-angle" min="0" max="360" value="90">
+                    </div>
+                </div>
+                
+                <!-- Translation controls -->
+                <div class="transform-params" id="translate-params" style="display: none;">
+                    <div class="control-group">
+                        <label for="translate-x">X Translation:</label>
+                        <input type="number" id="translate-x" min="-10" max="10" value="1">
+                    </div>
+                    <div class="control-group">
+                        <label for="translate-y">Y Translation:</label>
+                        <input type="number" id="translate-y" min="-10" max="10" value="1">
+                    </div>
+                    <div class="control-group">
+                        <label for="translate-z">Z Translation:</label>
+                        <input type="number" id="translate-z" min="-10" max="10" value="1">
+                    </div>
+                </div>
+                
+                <!-- Scale controls -->
+                <div class="transform-params" id="scale-params" style="display: none;">
+                    <div class="control-group">
+                        <label for="scale-x">X Scale Factor:</label>
+                        <input type="number" id="scale-x" min="0.1" max="3" step="0.1" value="1.5">
+                    </div>
+                    <div class="control-group">
+                        <label for="scale-y">Y Scale Factor:</label>
+                        <input type="number" id="scale-y" min="0.1" max="3" step="0.1" value="1.5">
+                    </div>
+                    <div class="control-group">
+                        <label for="scale-z">Z Scale Factor:</label>
+                        <input type="number" id="scale-z" min="0.1" max="3" step="0.1" value="1.5">
+                    </div>
+                </div>
+                
+                <!-- Mirror controls -->
+                <div class="transform-params" id="mirror-params" style="display: none;">
+                    <div class="control-group">
+                        <label for="mirror-plane">Mirror Plane:</label>
+                        <select id="mirror-plane">
+                            <option value="xy">XY</option>
+                            <option value="xz">XZ</option>
+                            <option value="yz">YZ</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- KTA controls -->
+                <div class="transform-params" id="kta-params" style="display: none;">
+                    <div class="control-group">
+                        <label for="kta-type">KTA Type:</label>
+                        <select id="kta-type">
+                            <option value="wave">Wave</option>
+                            <option value="fractal">Fractal</option>
+                            <option value="recursive">Recursive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button id="transform-btn">Apply Transform</button>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="pattern-tab">
+            <div class="controls">
+                <h2>Generate Pattern</h2>
+                <div class="control-group">
+                    <label for="pattern-type">Pattern Type:</label>
+                    <select id="pattern-type">
+                        <option value="cube">Cube</option>
+                        <option value="sphere">Sphere</option>
+                        <option value="wave">Wave</option>
+                        <option value="random">Random</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="pattern-dimensions">Dimensions:</label>
+                    <select id="pattern-dimensions">
+                        <option value="3d">3D (x,y,z)</option>
+                        <option value="4d">4D (x,y,z,t)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="pattern-x-dim">X Dimension:</label>
+                    <input type="number" id="pattern-x-dim" min="1" max="16" value="8">
+                </div>
+                <div class="control-group">
+                    <label for="pattern-y-dim">Y Dimension:</label>
+                    <input type="number" id="pattern-y-dim" min="1" max="16" value="8">
+                </div>
+                <div class="control-group">
+                    <label for="pattern-z-dim">Z Dimension:</label>
+                    <input type="number" id="pattern-z-dim" min="1" max="8" value="4">
+                </div>
+                <div class="control-group" id="pattern-t-dim-group" style="display: none;">
+                    <label for="pattern-t-dim">T Dimension:</label>
+                    <input type="number" id="pattern-t-dim" min="1" max="4" value="2">
+                </div>
+                <button id="pattern-btn">Generate Pattern</button>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="animate-tab">
+            <div class="controls">
+                <h2>Animate BitField</h2>
+                <div class="control-group">
+                    <label for="animation-type">Animation Type:</label>
+                    <select id="animation-type">
+                        <option value="layers">Cycle Through Layers</option>
+                        <option value="rotation">Rotation</option>
+                        <option value="wave">Wave Propagation</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="animation-frames">Number of Frames:</label>
+                    <input type="number" id="animation-frames" min="2" max="10" value="5">
+                </div>
+                <div class="control-group">
+                    <label for="animation-speed">Speed (ms):</label>
+                    <input type="number" id="animation-speed" min="100" max="2000" step="100" value="500">
+                </div>
+                <button id="animate-start-btn">Start Animation</button>
+                <button id="animate-stop-btn" style="display: none;">Stop Animation</button>
+            </div>
+        </div>
+        
+        <div class="visualization" id="output">
+BitMatrix Spatial Computing Demo Initialized
+
+Welcome! Select options above and click a button to begin.
+        </div>
+        
+        <footer>
+            <p>BitMatrix Spatial Computing © 2025 - Free for use to all</p>
+            <p>Created by Euan Craig (DigitalEuan.com)</p>
+        </footer>
+    </div>
+
+    <script>
+        // Current bitfield state
+        let currentBitfield = null;
+        let is3D = true;
+        let animationInterval = null;
+        
+        // Sample ASCII representations for demo purposes
+        const sampleBitfield3D = `BitField3D(8×8×4)
+
+Layer z=0:
++--------+
+|11111111|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|11111111|
++--------+
+
+Layer z=1:
++--------+
+|11111111|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|11111111|
++--------+
+
+Layer z=2:
++--------+
+|11111111|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|11111111|
++--------+
+
+Layer z=3:
++--------+
+|11111111|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|11111111|
++--------+`;
+
+        const sampleBitfield4D = `BitField4D(8×8×4×2)
+
+Time t=0:
+  Layer z=0:
+  +--------+
+  |11111111|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |11111111|
+  +--------+
+
+  Layer z=1:
+  +--------+
+  |11111111|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |11111111|
+  +--------+
+
+  Layer z=2:
+  +--------+
+  |11111111|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |11111111|
+  +--------+
+
+  Layer z=3:
+  +--------+
+  |11111111|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |11111111|
+  +--------+
+
+Time t=1:
+  Layer z=0:
+  +--------+
+  |11111111|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |11111111|
+  +--------+
+
+  Layer z=1:
+  +--------+
+  |11111111|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |11111111|
+  +--------+
+
+  Layer z=2:
+  +--------+
+  |11111111|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |11111111|
+  +--------+
+
+  Layer z=3:
+  +--------+
+  |11111111|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |11111111|
+  +--------+`;
+
+        // Sample pattern representations
+        const patternTemplates = {
+            cube: {
+                '3d': `BitField3D({x}×{y}×{z})
+
+Layer z=0:
++{border}+
+|{edge}|
+|{side}|
+|{side}|
+|{side}|
+|{side}|
+|{side}|
+|{edge}|
++{border}+
+
+Layer z=1:
++{border}+
+|{edge}|
+|{empty}|
+|{empty}|
+|{empty}|
+|{empty}|
+|{empty}|
+|{edge}|
++{border}+
+
+Layer z=2:
++{border}+
+|{edge}|
+|{empty}|
+|{empty}|
+|{empty}|
+|{empty}|
+|{empty}|
+|{edge}|
++{border}+
+
+Layer z=3:
++{border}+
+|{edge}|
+|{side}|
+|{side}|
+|{side}|
+|{side}|
+|{side}|
+|{edge}|
++{border}+`,
+                '4d': `BitField4D({x}×{y}×{z}×{t})
+
+Time t=0:
+  Layer z=0:
+  +{border}+
+  |{edge}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{edge}|
+  +{border}+
+
+  Layer z=1:
+  +{border}+
+  |{edge}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{edge}|
+  +{border}+
+
+  Layer z=2:
+  +{border}+
+  |{edge}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{edge}|
+  +{border}+
+
+  Layer z=3:
+  +{border}+
+  |{edge}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{edge}|
+  +{border}+
+
+Time t=1:
+  Layer z=0:
+  +{border}+
+  |{edge}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{edge}|
+  +{border}+
+
+  Layer z=1:
+  +{border}+
+  |{edge}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{edge}|
+  +{border}+
+
+  Layer z=2:
+  +{border}+
+  |{edge}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{empty}|
+  |{edge}|
+  +{border}+
+
+  Layer z=3:
+  +{border}+
+  |{edge}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{side}|
+  |{edge}|
+  +{border}+`
+            },
+            sphere: {
+                '3d': `BitField3D({x}×{y}×{z})
+
+Layer z=0:
++{border}+
+|00111100|
+|01000010|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|01000010|
+|00111100|
++{border}+
+
+Layer z=1:
++{border}+
+|01111110|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|01111110|
++{border}+
+
+Layer z=2:
++{border}+
+|01111110|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|01111110|
++{border}+
+
+Layer z=3:
++{border}+
+|00111100|
+|01000010|
+|10000001|
+|10000001|
+|10000001|
+|10000001|
+|01000010|
+|00111100|
++{border}+`,
+                '4d': `BitField4D({x}×{y}×{z}×{t})
+
+Time t=0:
+  Layer z=0:
+  +{border}+
+  |00111100|
+  |01000010|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |01000010|
+  |00111100|
+  +{border}+
+
+  Layer z=1:
+  +{border}+
+  |01111110|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |01111110|
+  +{border}+
+
+  Layer z=2:
+  +{border}+
+  |01111110|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |01111110|
+  +{border}+
+
+  Layer z=3:
+  +{border}+
+  |00111100|
+  |01000010|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |01000010|
+  |00111100|
+  +{border}+
+
+Time t=1:
+  Layer z=0:
+  +{border}+
+  |00111100|
+  |01000010|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |01000010|
+  |00111100|
+  +{border}+
+
+  Layer z=1:
+  +{border}+
+  |01111110|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |01111110|
+  +{border}+
+
+  Layer z=2:
+  +{border}+
+  |01111110|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |01111110|
+  +{border}+
+
+  Layer z=3:
+  +{border}+
+  |00111100|
+  |01000010|
+  |10000001|
+  |10000001|
+  |10000001|
+  |10000001|
+  |01000010|
+  |00111100|
+  +{border}+`
+            }
+        };
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and tab contents
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+        
+        // Show/hide 4D time dimension input
+        document.getElementById('dimensions').addEventListener('change', function() {
+            const is4D = this.value === '4d';
+            document.getElementById('t-dim-group').style.display = is4D ? 'block' : 'none';
+        });
+        
+        document.getElementById('pattern-dimensions').addEventListener('change', function() {
+            const is4D = this.value === '4d';
+            document.getElementById('pattern-t-dim-group').style.display = is4D ? 'block' : 'none';
+        });
+        
+        // Show/hide transform parameters based on transform type
+        document.getElementById('transform-type').addEventListener('change', function() {
+            const transformType = this.value;
+            document.querySelectorAll('.transform-params').forEach(param => {
+                param.style.display = 'none';
+            });
+            document.getElementById(`${transformType}-params`).style.display = 'block';
+        });
+        
+        // Create BitField button
+        document.getElementById('create-btn').addEventListener('click', function() {
+            const dimensions = document.getElementById('dimensions').value;
+            const xDim = parseInt(document.getElementById('x-dim').value);
+            const yDim = parseInt(document.getElementById('y-dim').value);
+            const zDim = parseInt(document.getElementById('z-dim').value);
+            const tDim = dimensions === '4d' ? parseInt(document.getElementById('t-dim').value) : 0;
+            const pattern = document.getElementById('pattern').value;
+            
+            is3D = dimensions === '3d';
+            
+            let output = '';
+            if (is3D) {
+                output = `Created 3D bitfield with dimensions ${xDim}×${yDim}×${zDim}\n`;
+                if (pattern !== 'empty') {
+                    output += `Initialized with '${pattern}' pattern\n\n`;
+                    
+                    // Generate pattern visualization
+                    if (pattern === 'cube' || pattern === 'sphere') {
+                        let template = patternTemplates[pattern]['3d'];
+                        template = template.replace(/\{x\}/g, xDim);
+                        template = template.replace(/\{y\}/g, yDim);
+                        template = template.replace(/\{z\}/g, zDim);
+                        template = template.replace(/\{border\}/g, '-'.repeat(xDim));
+                        template = template.replace(/\{edge\}/g, '1'.repeat(xDim));
+                        template = template.replace(/\{side\}/g, '1' + '0'.repeat(xDim-2) + '1');
+                        template = template.replace(/\{empty\}/g, '1' + '0'.repeat(xDim-2) + '1');
+                        output += template;
+                    } else if (pattern === 'wave') {
+                        output += generateWavePattern(xDim, yDim, zDim);
+                    } else if (pattern === 'random') {
+                        output += generateRandomPattern(xDim, yDim, zDim);
+                    }
+                } else {
+                    output += `\n${generateEmptyPattern(xDim, yDim, zDim)}`;
+                }
+            } else {
+                output = `Created 4D bitfield with dimensions ${xDim}×${yDim}×${zDim}×${tDim}\n`;
+                if (pattern !== 'empty') {
+                    output += `Initialized with '${pattern}' pattern\n\n`;
+                    
+                    // Generate pattern visualization
+                    if (pattern === 'cube' || pattern === 'sphere') {
+                        let template = patternTemplates[pattern]['4d'];
+                        template = template.replace(/\{x\}/g, xDim);
+                        template = template.replace(/\{y\}/g, yDim);
+                        template = template.replace(/\{z\}/g, zDim);
+                        template = template.replace(/\{t\}/g, tDim);
+                        template = template.replace(/\{border\}/g, '-'.repeat(xDim));
+                        template = template.replace(/\{edge\}/g, '1'.repeat(xDim));
+                        template = template.replace(/\{side\}/g, '1' + '0'.repeat(xDim-2) + '1');
+                        template = template.replace(/\{empty\}/g, '1' + '0'.repeat(xDim-2) + '1');
+                        output += template;
+                    } else if (pattern === 'wave') {
+                        output += generateWavePattern4D(xDim, yDim, zDim, tDim);
+                    } else if (pattern === 'random') {
+                        output += generateRandomPattern4D(xDim, yDim, zDim, tDim);
+                    }
+                } else {
+                    output += `\n${generateEmptyPattern4D(xDim, yDim, zDim, tDim)}`;
+                }
+            }
+            
+            // Store current bitfield representation
+            currentBitfield = output;
+            
+            // Display in output area
+            document.getElementById('output').textContent = output;
+        });
+        
+        // Transform button
+        document.getElementById('transform-btn').addEventListener('click', function() {
+            if (!currentBitfield) {
+                document.getElementById('output').textContent = "Error: No bitfield created yet. Please create a bitfield first.";
+                return;
+            }
+            
+            const transformType = document.getElementById('transform-type').value;
+            let output = "Original bitfield:\n" + currentBitfield + "\n\n";
+            
+            switch (transformType) {
+                case 'rotate':
+                    if (!is3D) {
+                        output += "Error: Rotation is only supported for 3D bitfields";
+                        break;
+                    }
+                    const axis = document.getElementById('rotation-axis').value;
+                    const angle = document.getElementById('rotation-angle').value;
+                    output += `Rotated bitfield (axis=${axis}, angle=${angle}°):\n`;
+                    output += simulateRotation(currentBitfield, axis, angle);
+                    break;
+                    
+                case 'translate':
+                    if (!is3D) {
+                        output += "Error: Translation is only supported for 3D bitfields";
+                        break;
+                    }
+                    const tx = document.getElementById('translate-x').value;
+                    const ty = document.getElementById('translate-y').value;
+                    const tz = document.getElementById('translate-z').value;
+                    output += `Translated bitfield (vector=[${tx}, ${ty}, ${tz}]):\n`;
+                    output += simulateTranslation(currentBitfield, [tx, ty, tz]);
+                    break;
+                    
+                case 'scale':
+                    if (!is3D) {
+                        output += "Error: Scaling is only supported for 3D bitfields";
+                        break;
+                    }
+                    const sx = document.getElementById('scale-x').value;
+                    const sy = document.getElementById('scale-y').value;
+                    const sz = document.getElementById('scale-z').value;
+                    output += `Scaled bitfield (factors=[${sx}, ${sy}, ${sz}]):\n`;
+                    output += simulateScaling(currentBitfield, [sx, sy, sz]);
+                    break;
+                    
+                case 'mirror':
+                    if (!is3D) {
+                        output += "Error: Mirroring is only supported for 3D bitfields";
+                        break;
+                    }
+                    const plane = document.getElementById('mirror-plane').value;
+                    output += `Mirrored bitfield (plane=${plane}):\n`;
+                    output += simulateMirroring(currentBitfield, plane);
+                    break;
+                    
+                case 'kta':
+                    const ktaType = document.getElementById('kta-type').value;
+                    output += `KTA transformed bitfield (type=${ktaType}):\n`;
+                    output += simulateKTA(currentBitfield, ktaType);
+                    break;
+            }
+            
+            document.getElementById('output').textContent = output;
+        });
+        
+        // Pattern button
+        document.getElementById('pattern-btn').addEventListener('click', function() {
+            const patternType = document.getElementById('pattern-type').value;
+            const dimensions = document.getElementById('pattern-dimensions').value;
+            const xDim = parseInt(document.getElementById('pattern-x-dim').value);
+            const yDim = parseInt(document.getElementById('pattern-y-dim').value);
+            const zDim = parseInt(document.getElementById('pattern-z-dim').value);
+            const tDim = dimensions === '4d' ? parseInt(document.getElementById('pattern-t-dim').value) : 0;
+            
+            is3D = dimensions === '3d';
+            
+            let output = '';
+            if (is3D) {
+                output = `Generated '${patternType}' pattern with dimensions ${xDim}×${yDim}×${zDim}:\n\n`;
+                
+                // Generate pattern visualization
+                if (patternType === 'cube' || patternType === 'sphere') {
+                    let template = patternTemplates[patternType]['3d'];
+                    template = template.replace(/\{x\}/g, xDim);
+                    template = template.replace(/\{y\}/g, yDim);
+                    template = template.replace(/\{z\}/g, zDim);
+                    template = template.replace(/\{border\}/g, '-'.repeat(xDim));
+                    template = template.replace(/\{edge\}/g, '1'.repeat(xDim));
+                    template = template.replace(/\{side\}/g, '1' + '0'.repeat(xDim-2) + '1');
+                    template = template.replace(/\{empty\}/g, '1' + '0'.repeat(xDim-2) + '1');
+                    output += template;
+                } else if (patternType === 'wave') {
+                    output += generateWavePattern(xDim, yDim, zDim);
+                } else if (patternType === 'random') {
+                    output += generateRandomPattern(xDim, yDim, zDim);
+                }
+            } else {
+                output = `Generated '${patternType}' pattern with dimensions ${xDim}×${yDim}×${zDim}×${tDim}:\n\n`;
+                
+                // Generate pattern visualization
+                if (patternType === 'cube' || patternType === 'sphere') {
+                    let template = patternTemplates[patternType]['4d'];
+                    template = template.replace(/\{x\}/g, xDim);
+                    template = template.replace(/\{y\}/g, yDim);
+                    template = template.replace(/\{z\}/g, zDim);
+                    template = template.replace(/\{t\}/g, tDim);
+                    template = template.replace(/\{border\}/g, '-'.repeat(xDim));
+                    template = template.replace(/\{edge\}/g, '1'.repeat(xDim));
+                    template = template.replace(/\{side\}/g, '1' + '0'.repeat(xDim-2) + '1');
+                    template = template.replace(/\{empty\}/g, '1' + '0'.repeat(xDim-2) + '1');
+                    output += template;
+                } else if (patternType === 'wave') {
+                    output += generateWavePattern4D(xDim, yDim, zDim, tDim);
+                } else if (patternType === 'random') {
+                    output += generateRandomPattern4D(xDim, yDim, zDim, tDim);
+                }
+            }
+            
+            // Store current bitfield representation
+            currentBitfield = output;
+            
+            // Display in output area
+            document.getElementById('output').textContent = output;
+        });
+        
+        // Animation buttons
+        document.getElementById('animate-start-btn').addEventListener('click', function() {
+            if (!currentBitfield) {
+                document.getElementById('output').textContent = "Error: No bitfield created yet. Please create a bitfield first.";
+                return;
+            }
+            
+            const animationType = document.getElementById('animation-type').value;
+            const frames = parseInt(document.getElementById('animation-frames').value);
+            const speed = parseInt(document.getElementById('animation-speed').value);
+            
+            // Generate animation frames
+            let animationFrames = [];
+            
+            switch (animationType) {
+                case 'layers':
+                    animationFrames = generateLayerAnimation(currentBitfield, frames);
+                    break;
+                case 'rotation':
+                    animationFrames = generateRotationAnimation(currentBitfield, frames);
+                    break;
+                case 'wave':
+                    animationFrames = generateWaveAnimation(currentBitfield, frames);
+                    break;
+            }
+            
+            // Start animation
+            let frameIndex = 0;
+            
+            // Clear any existing animation
+            if (animationInterval) {
+                clearInterval(animationInterval);
+            }
+            
+            // Show stop button, hide start button
+            document.getElementById('animate-start-btn').style.display = 'none';
+            document.getElementById('animate-stop-btn').style.display = 'inline-block';
+            
+            // Display first frame
+            document.getElementById('output').textContent = `Animation: ${animationType} (Frame 1/${frames})\n\n${animationFrames[0]}`;
+            
+            // Set up animation interval
+            animationInterval = setInterval(() => {
+                frameIndex = (frameIndex + 1) % animationFrames.length;
+                document.getElementById('output').textContent = `Animation: ${animationType} (Frame ${frameIndex+1}/${frames})\n\n${animationFrames[frameIndex]}`;
+            }, speed);
+        });
+        
+        document.getElementById('animate-stop-btn').addEventListener('click', function() {
+            // Stop animation
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+            
+            // Show start button, hide stop button
+            document.getElementById('animate-start-btn').style.display = 'inline-block';
+            document.getElementById('animate-stop-btn').style.display = 'none';
+            
+            // Display original bitfield
+            document.getElementById('output').textContent = "Animation stopped\n\n" + currentBitfield;
+        });
+        
+        // Helper functions for pattern generation
+        function generateEmptyPattern(xDim, yDim, zDim) {
+            let output = `BitField3D(${xDim}×${yDim}×${zDim})\n`;
+            
+            for (let z = 0; z < zDim; z++) {
+                output += `\nLayer z=${z}:\n`;
+                output += `+${'-'.repeat(xDim)}+\n`;
+                
+                for (let y = 0; y < yDim; y++) {
+                    output += '|' + '0'.repeat(xDim) + '|\n';
+                }
+                
+                output += `+${'-'.repeat(xDim)}+\n`;
+            }
+            
+            return output;
+        }
+        
+        function generateEmptyPattern4D(xDim, yDim, zDim, tDim) {
+            let output = `BitField4D(${xDim}×${yDim}×${zDim}×${tDim})\n`;
+            
+            for (let t = 0; t < tDim; t++) {
+                output += `\nTime t=${t}:\n`;
+                
+                for (let z = 0; z < zDim; z++) {
+                    output += `  Layer z=${z}:\n`;
+                    output += `  +${'-'.repeat(xDim)}+\n`;
+                    
+                    for (let y = 0; y < yDim; y++) {
+                        output += '  |' + '0'.repeat(xDim) + '|\n';
+                    }
+                    
+                    output += `  +${'-'.repeat(xDim)}+\n`;
+                }
+            }
+            
+            return output;
+        }
+        
+        function generateWavePattern(xDim, yDim, zDim) {
+            let output = `BitField3D(${xDim}×${yDim}×${zDim})\n`;
+            
+            for (let z = 0; z < zDim; z++) {
+                output += `\nLayer z=${z}:\n`;
+                output += `+${'-'.repeat(xDim)}+\n`;
+                
+                for (let y = 0; y < yDim; y++) {
+                    let row = '|';
+                    for (let x = 0; x < xDim; x++) {
+                        // Simple wave pattern based on sine functions
+                        const waveVal = Math.sin(x/2) * Math.cos(y/2) * Math.sin(z/2);
+                        row += waveVal > 0 ? '1' : '0';
+                    }
+                    row += '|\n';
+                    output += row;
+                }
+                
+                output += `+${'-'.repeat(xDim)}+\n`;
+            }
+            
+            return output;
+        }
+        
+        function generateWavePattern4D(xDim, yDim, zDim, tDim) {
+            let output = `BitField4D(${xDim}×${yDim}×${zDim}×${tDim})\n`;
+            
+            for (let t = 0; t < tDim; t++) {
+                output += `\nTime t=${t}:\n`;
+                
+                for (let z = 0; z < zDim; z++) {
+                    output += `  Layer z=${z}:\n`;
+                    output += `  +${'-'.repeat(xDim)}+\n`;
+                    
+                    for (let y = 0; y < yDim; y++) {
+                        let row = '  |';
+                        for (let x = 0; x < xDim; x++) {
+                            // Wave pattern with temporal component
+                            const waveVal = Math.sin(x/2) * Math.cos(y/2) * Math.sin(z/2) * Math.cos(t/2);
+                            row += waveVal > 0 ? '1' : '0';
+                        }
+                        row += '|\n';
+                        output += row;
+                    }
+                    
+                    output += `  +${'-'.repeat(xDim)}+\n`;
+                }
+            }
+            
+            return output;
+        }
+        
+        function generateRandomPattern(xDim, yDim, zDim) {
+            let output = `BitField3D(${xDim}×${yDim}×${zDim})\n`;
+            
+            for (let z = 0; z < zDim; z++) {
+                output += `\nLayer z=${z}:\n`;
+                output += `+${'-'.repeat(xDim)}+\n`;
+                
+                for (let y = 0; y < yDim; y++) {
+                    let row = '|';
+                    for (let x = 0; x < xDim; x++) {
+                        // Random bit with 50% probability
+                        row += Math.random() > 0.5 ? '1' : '0';
+                    }
+                    row += '|\n';
+                    output += row;
+                }
+                
+                output += `+${'-'.repeat(xDim)}+\n`;
+            }
+            
+            return output;
+        }
+        
+        function generateRandomPattern4D(xDim, yDim, zDim, tDim) {
+            let output = `BitField4D(${xDim}×${yDim}×${zDim}×${tDim})\n`;
+            
+            for (let t = 0; t < tDim; t++) {
+                output += `\nTime t=${t}:\n`;
+                
+                for (let z = 0; z < zDim; z++) {
+                    output += `  Layer z=${z}:\n`;
+                    output += `  +${'-'.repeat(xDim)}+\n`;
+                    
+                    for (let y = 0; y < yDim; y++) {
+                        let row = '  |';
+                        for (let x = 0; x < xDim; x++) {
+                            // Random bit with 50% probability
+                            row += Math.random() > 0.5 ? '1' : '0';
+                        }
+                        row += '|\n';
+                        output += row;
+                    }
+                    
+                    output += `  +${'-'.repeat(xDim)}+\n`;
+                }
+            }
+            
+            return output;
+        }
+        
+        // Helper functions for transformations (simplified simulations)
+        function simulateRotation(bitfield, axis, angle) {
+            // For demo purposes, just return a modified version of the original
+            // In a real implementation, this would apply actual rotation math
+            const lines = bitfield.split('\n');
+            const header = lines[0];
+            const result = [header];
+            
+            // Find layer sections and modify them
+            let inLayer = false;
+            let layerLines = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                
+                if (line.startsWith('Layer z=')) {
+                    if (inLayer) {
+                        // Process previous layer
+                        result.push(...rotateLayerContent(layerLines, axis, angle));
+                        layerLines = [];
+                    }
+                    inLayer = true;
+                    result.push(line);
+                    layerLines = [];
+                } else if (inLayer) {
+                    layerLines.push(line);
+                } else {
+                    result.push(line);
+                }
+            }
+            
+            // Process last layer if any
+            if (layerLines.length > 0) {
+                result.push(...rotateLayerContent(layerLines, axis, angle));
+            }
+            
+            return result.join('\n');
+        }
+        
+        function rotateLayerContent(layerLines, axis, angle) {
+            // Simple simulation of rotation effect
+            // In a real implementation, this would apply proper rotation math
+            const rotated = [...layerLines];
+            
+            // For demo purposes, just reverse the content of the rows
+            // to simulate a rotation effect
+            if (axis === 'z') {
+                // Skip border lines
+                for (let i = 1; i < rotated.length - 1; i++) {
+                    const line = rotated[i];
+                    if (line.startsWith('|')) {
+                        const content = line.substring(1, line.length - 2);
+                        rotated[i] = '|' + content.split('').reverse().join('') + '|';
+                    }
+                }
+            } else if (axis === 'x' || axis === 'y') {
+                // For x and y rotations, swap some rows to simulate the effect
+                const contentRows = rotated.slice(1, rotated.length - 1);
+                for (let i = 0; i < contentRows.length / 2; i++) {
+                    const temp = contentRows[i];
+                    contentRows[i] = contentRows[contentRows.length - 1 - i];
+                    contentRows[contentRows.length - 1 - i] = temp;
+                }
+                rotated.splice(1, contentRows.length, ...contentRows);
+            }
+            
+            return rotated;
+        }
+        
+        function simulateTranslation(bitfield, vector) {
+            // For demo purposes, just shift the content
+            const [tx, ty, tz] = vector;
+            const lines = bitfield.split('\n');
+            const header = lines[0];
+            const result = [header];
+            
+            // Find layer sections and modify them
+            let currentLayer = -1;
+            let inLayer = false;
+            let allLayers = [];
+            let currentLayerLines = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                
+                if (line.startsWith('Layer z=')) {
+                    if (inLayer) {
+                        allLayers.push(currentLayerLines);
+                        currentLayerLines = [];
+                    }
+                    inLayer = true;
+                    currentLayer = parseInt(line.match(/Layer z=(\d+)/)[1]);
+                    currentLayerLines = [line];
+                } else if (inLayer) {
+                    currentLayerLines.push(line);
+                } else {
+                    result.push(line);
+                }
+            }
+            
+            // Add last layer
+            if (currentLayerLines.length > 0) {
+                allLayers.push(currentLayerLines);
+            }
+            
+            // Apply z translation
+            const newLayerOrder = [];
+            for (let z = 0; z < allLayers.length; z++) {
+                const newZ = (z - tz + allLayers.length) % allLayers.length;
+                newLayerOrder[newZ] = allLayers[z];
+            }
+            
+            // Apply x,y translation to each layer
+            for (let z = 0; z < newLayerOrder.length; z++) {
+                const layerLines = newLayerOrder[z];
+                if (!layerLines) continue;
+                
+                // Update layer number
+                result.push(layerLines[0].replace(/Layer z=\d+/, `Layer z=${z}`));
+                
+                // Add border
+                result.push(layerLines[1]);
+                
+                // Process content rows with x,y translation
+                const contentRows = layerLines.slice(2, layerLines.length - 1);
+                for (let y = 0; y < contentRows.length; y++) {
+                    const line = contentRows[y];
+                    if (line.startsWith('|')) {
+                        const content = line.substring(1, line.length - 2);
+                        let newContent = content;
+                        
+                        // Apply x translation (simplified)
+                        if (tx !== 0) {
+                            newContent = content.substring(tx < 0 ? -tx : 0) + 
+                                        '0'.repeat(Math.abs(tx));
+                            newContent = newContent.substring(0, content.length);
+                        }
+                        
+                        result.push('|' + newContent + '|');
+                    }
+                }
+                
+                // Add border
+                result.push(layerLines[layerLines.length - 1]);
+            }
+            
+            return result.join('\n');
+        }
+        
+        function simulateScaling(bitfield, factors) {
+            // For demo purposes, just return a modified version
+            // In a real implementation, this would apply proper scaling
+            const [sx, sy, sz] = factors;
+            
+            // Extract dimensions from header
+            const header = bitfield.split('\n')[0];
+            const dims = header.match(/BitField3D\((\d+)×(\d+)×(\d+)\)/);
+            const xDim = parseInt(dims[1]);
+            const yDim = parseInt(dims[2]);
+            const zDim = parseInt(dims[3]);
+            
+            // Calculate new dimensions
+            const newXDim = Math.round(xDim * sx);
+            const newYDim = Math.round(yDim * sy);
+            const newZDim = Math.round(zDim * sz);
+            
+            // Generate a new pattern with the scaled dimensions
+            let output = `BitField3D(${newXDim}×${newYDim}×${newZDim})\n`;
+            
+            for (let z = 0; z < newZDim; z++) {
+                output += `\nLayer z=${z}:\n`;
+                output += `+${'-'.repeat(newXDim)}+\n`;
+                
+                for (let y = 0; y < newYDim; y++) {
+                    let row = '|';
+                    for (let x = 0; x < newXDim; x++) {
+                        // Map to original coordinates
+                        const origX = Math.round(x / sx);
+                        const origY = Math.round(y / sy);
+                        const origZ = Math.round(z / sz);
+                        
+                        // Check if original coordinates are on the edge
+                        const isEdge = (origX === 0 || origX === xDim - 1 || 
+                                       origY === 0 || origY === yDim - 1 || 
+                                       origZ === 0 || origZ === zDim - 1);
+                        
+                        row += isEdge ? '1' : '0';
+                    }
+                    row += '|\n';
+                    output += row;
+                }
+                
+                output += `+${'-'.repeat(newXDim)}+\n`;
+            }
+            
+            return output;
+        }
+        
+        function simulateMirroring(bitfield, plane) {
+            // For demo purposes, just reverse appropriate dimensions
+            const lines = bitfield.split('\n');
+            const header = lines[0];
+            const result = [header];
+            
+            if (plane === 'xy') {
+                // Mirror across xy-plane (reverse z order)
+                const layers = [];
+                let currentLayer = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    if (line.startsWith('Layer z=') && currentLayer.length > 0) {
+                        layers.push(currentLayer);
+                        currentLayer = [line];
+                    } else {
+                        currentLayer.push(line);
+                    }
+                }
+                
+                if (currentLayer.length > 0) {
+                    layers.push(currentLayer);
+                }
+                
+                // Reverse layer order
+                layers.reverse();
+                
+                // Update layer numbers
+                for (let z = 0; z < layers.length; z++) {
+                    layers[z][0] = `Layer z=${z}:`;
+                    result.push(...layers[z]);
+                }
+            } else if (plane === 'xz') {
+                // Mirror across xz-plane (reverse rows within each layer)
+                let inLayer = false;
+                let layerLines = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    if (line.startsWith('Layer z=')) {
+                        if (inLayer) {
+                            // Process previous layer
+                            const borderLines = [layerLines[0], layerLines[layerLines.length - 1]];
+                            const contentLines = layerLines.slice(1, layerLines.length - 1);
+                            contentLines.reverse();
+                            result.push(...[layerLines[0], ...contentLines, layerLines[layerLines.length - 1]]);
+                            layerLines = [];
+                        }
+                        inLayer = true;
+                        result.push(line);
+                        layerLines = [];
+                    } else if (inLayer) {
+                        layerLines.push(line);
+                    } else {
+                        result.push(line);
+                    }
+                }
+                
+                // Process last layer if any
+                if (layerLines.length > 0) {
+                    const borderLines = [layerLines[0], layerLines[layerLines.length - 1]];
+                    const contentLines = layerLines.slice(1, layerLines.length - 1);
+                    contentLines.reverse();
+                    result.push(...[layerLines[0], ...contentLines, layerLines[layerLines.length - 1]]);
+                }
+            } else if (plane === 'yz') {
+                // Mirror across yz-plane (reverse characters in each row)
+                let inLayer = false;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    if (line.startsWith('Layer z=')) {
+                        inLayer = true;
+                        result.push(line);
+                    } else if (line.startsWith('+')) {
+                        result.push(line);
+                    } else if (line.startsWith('|') && inLayer) {
+                        const content = line.substring(1, line.length - 2);
+                        result.push('|' + content.split('').reverse().join('') + '|');
+                    } else {
+                        result.push(line);
+                    }
+                }
+            }
+            
+            return result.join('\n');
+        }
+        
+        function simulateKTA(bitfield, ktaType) {
+            // For demo purposes, apply a simple transformation based on KTA type
+            const lines = bitfield.split('\n');
+            const header = lines[0];
+            const is4D = header.includes('BitField4D');
+            const result = [header];
+            
+            if (is4D) {
+                // For 4D bitfields, just modify some bits based on KTA type
+                let inTime = false;
+                let inLayer = false;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    if (line.startsWith('Time t=')) {
+                        inTime = true;
+                        inLayer = false;
+                        result.push(line);
+                    } else if (line.startsWith('  Layer z=')) {
+                        inLayer = true;
+                        result.push(line);
+                    } else if (line.startsWith('  |') && inLayer) {
+                        let newLine = line;
+                        
+                        if (ktaType === 'wave') {
+                            // Flip some bits in a wave-like pattern
+                            const rowIndex = result.length % 4;
+                            if (rowIndex === 1 || rowIndex === 2) {
+                                newLine = line.replace(/0/g, 'X').replace(/1/g, '0').replace(/X/g, '1');
+                            }
+                        } else if (ktaType === 'fractal') {
+                            // Create a checkerboard pattern
+                            const rowIndex = result.length % 2;
+                            if (rowIndex === 1) {
+                                newLine = line.replace(/0/g, 'X').replace(/1/g, '0').replace(/X/g, '1');
+                            }
+                        } else if (ktaType === 'recursive') {
+                            // Alternate bits
+                            newLine = '';
+                            for (let j = 0; j < line.length; j++) {
+                                if (line[j] === '0') newLine += '1';
+                                else if (line[j] === '1') newLine += '0';
+                                else newLine += line[j];
+                            }
+                        }
+                        
+                        result.push(newLine);
+                    } else {
+                        result.push(line);
+                    }
+                }
+            } else {
+                // For 3D bitfields, apply transformations
+                let inLayer = false;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    if (line.startsWith('Layer z=')) {
+                        inLayer = true;
+                        result.push(line);
+                    } else if (line.startsWith('|') && inLayer) {
+                        let newLine = line;
+                        
+                        if (ktaType === 'wave') {
+                            // Flip some bits in a wave-like pattern
+                            const rowIndex = result.length % 4;
+                            if (rowIndex === 1 || rowIndex === 2) {
+                                newLine = line.replace(/0/g, 'X').replace(/1/g, '0').replace(/X/g, '1');
+                            }
+                        } else if (ktaType === 'fractal') {
+                            // Create a checkerboard pattern
+                            const rowIndex = result.length % 2;
+                            if (rowIndex === 1) {
+                                newLine = line.replace(/0/g, 'X').replace(/1/g, '0').replace(/X/g, '1');
+                            }
+                        } else if (ktaType === 'recursive') {
+                            // Alternate bits
+                            newLine = '';
+                            for (let j = 0; j < line.length; j++) {
+                                if (line[j] === '0') newLine += '1';
+                                else if (line[j] === '1') newLine += '0';
+                                else newLine += line[j];
+                            }
+                        }
+                        
+                        result.push(newLine);
+                    } else {
+                        result.push(line);
+                    }
+                }
+            }
+            
+            return result.join('\n');
+        }
+        
+        // Helper functions for animations
+        function generateLayerAnimation(bitfield, frames) {
+            const lines = bitfield.split('\n');
+            const header = lines[0];
+            const is4D = header.includes('BitField4D');
+            
+            if (is4D) {
+                // For 4D, cycle through time points
+                const timePoints = [];
+                let currentTime = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    if (line.startsWith('Time t=')) {
+                        if (currentTime.length > 0) {
+                            timePoints.push([header, ...currentTime].join('\n'));
+                        }
+                        currentTime = [line];
+                    } else {
+                        currentTime.push(line);
+                    }
+                }
+                
+                if (currentTime.length > 0) {
+                    timePoints.push([header, ...currentTime].join('\n'));
+                }
+                
+                // If we have fewer time points than frames, repeat them
+                const animationFrames = [];
+                for (let i = 0; i < frames; i++) {
+                    animationFrames.push(timePoints[i % timePoints.length]);
+                }
+                
+                return animationFrames;
+            } else {
+                // For 3D, cycle through z layers
+                const layers = [];
+                let currentLayer = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    if (line.startsWith('Layer z=')) {
+                        if (currentLayer.length > 0) {
+                            layers.push([header, ...currentLayer].join('\n'));
+                        }
+                        currentLayer = [line];
+                    } else {
+                        currentLayer.push(line);
+                    }
+                }
+                
+                if (currentLayer.length > 0) {
+                    layers.push([header, ...currentLayer].join('\n'));
+                }
+                
+                // If we have fewer layers than frames, repeat them
+                const animationFrames = [];
+                for (let i = 0; i < frames; i++) {
+                    animationFrames.push(layers[i % layers.length]);
+                }
+                
+                return animationFrames;
+            }
+        }
+        
+        function generateRotationAnimation(bitfield, frames) {
+            const animationFrames = [];
+            
+            // Generate frames with different rotation angles
+            for (let i = 0; i < frames; i++) {
+                const angle = (i * 360 / frames) % 360;
+                animationFrames.push(simulateRotation(bitfield, 'z', angle));
+            }
+            
+            return animationFrames;
+        }
+        
+        function generateWaveAnimation(bitfield, frames) {
+            const animationFrames = [];
+            
+            // Generate frames with different wave patterns
+            for (let i = 0; i < frames; i++) {
+                const phase = i * Math.PI / frames;
+                animationFrames.push(simulateWaveWithPhase(bitfield, phase));
+            }
+            
+            return animationFrames;
+        }
+        
+        function simulateWaveWithPhase(bitfield, phase) {
+            // For demo purposes, just modify the bitfield with a phase offset
+            const lines = bitfield.split('\n');
+            const header = lines[0];
+            const is4D = header.includes('BitField4D');
+            const result = [header];
+            
+            if (is4D) {
+                // For 4D bitfields
+                let inTime = false;
+                let inLayer = false;
+                let timeIndex = 0;
+                let layerIndex = 0;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    if (line.startsWith('Time t=')) {
+                        inTime = true;
+                        inLayer = false;
+                        timeIndex = parseInt(line.match(/Time t=(\d+)/)[1]);
+                        result.push(line);
+                    } else if (line.startsWith('  Layer z=')) {
+                        inLayer = true;
+                        layerIndex = parseInt(line.match(/Layer z=(\d+)/)[1]);
+                        result.push(line);
+                    } else if (line.startsWith('  |') && inLayer) {
+                        // Apply wave transformation based on position and phase
+                        const rowIndex = result.length % 8;
+                        const waveOffset = Math.sin(rowIndex / 2 + layerIndex + timeIndex + phase);
+                        
+                        if (waveOffset > 0) {
+                            result.push(line.replace(/0/g, 'X').replace(/1/g, '0').replace(/X/g, '1'));
+                        } else {
+                            result.push(line);
+                        }
+                    } else {
+                        result.push(line);
+                    }
+                }
+            } else {
+                // For 3D bitfields
+                let inLayer = false;
+                let layerIndex = 0;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    if (line.startsWith('Layer z=')) {
+                        inLayer = true;
+                        layerIndex = parseInt(line.match(/Layer z=(\d+)/)[1]);
+                        result.push(line);
+                    } else if (line.startsWith('|') && inLayer) {
+                        // Apply wave transformation based on position and phase
+                        const rowIndex = result.length % 8;
+                        const waveOffset = Math.sin(rowIndex / 2 + layerIndex + phase);
+                        
+                        if (waveOffset > 0) {
+                            result.push(line.replace(/0/g, 'X').replace(/1/g, '0').replace(/X/g, '1'));
+                        } else {
+                            result.push(line);
+                        }
+                    } else {
+                        result.push(line);
+                    }
+                }
+            }
+            
+            return result.join('\n');
+        }
+    </script>
+</body>
+</html>
