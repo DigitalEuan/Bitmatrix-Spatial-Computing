@@ -4,7 +4,7 @@ BitMatrix Spatial Computing (BSC) is a groundbreaking framework that redefines t
 
 Note: I have used ai to develop this project including parts of the website so apologies if it has hicups along the way. This is all experimental.
 
-![BitMatrix Spatial Computing](https://digitaleuan.com/bitmatrix-complete/BitmatrixSpatialComputing-logo.png
+![BitMatrix Spatial Computing](https://digitaleuan.com/bitmatrix-complete/BitmatrixSpatialComputing-logo.png)
 
 ## Overview
 
