@@ -166,3 +166,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Visit [DigitalEuan.com](https://digitaleuan.com/bitmatrix-complete/) for more information about BitMatrix Spatial Computing.
 
+
+## Bitmatrix Spatial Computing Extension
+- Basically V2.0: https://github.com/DigitalEuan/bitmatrix-toolkit
+
